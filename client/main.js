@@ -1,7 +1,3 @@
-// Meteor.startup(function(){
-//     initPaprikaEvents();
-// });
-
 //Note: The classroom data should be available under the Classrooms variable! (in classrooms.js)
 
 //Reactive code to react to changes in the classroom data
@@ -13,15 +9,31 @@ Deps.autorun(function() {
         var status;
 
         //we black out the classroom if so set
-        if(classroomData.blackout){
+        if(classroomData.global.paused){
             document.body.style.background = 'black';  
-            status = classroomData.title +  " has been stopped!";
+            status = classroomData.name +  " has been stopped!\n";
         } 
         else{
             document.body.style.background = 'white';  
-            status = classroomData.title +  " is transcurring normally. On camera tags " + classroomData.presentTags;
+            status = classroomData.name +  " is transcurring normally.\n";
         } 
-        
+
+        if(classroomData.devices.length>0){
+            for(i=0;i<classroomData.devices.length;i++){
+
+                var device = Devices.findOne({id: classroomData.devices[i]});
+
+                if(device){
+                    if(device.current.presentTags){
+                        status += "Tags present in device "+classroomData.devices[i]+": "+device.current.presentTags.toString()+"\n";
+                    }
+                }
+
+            }
+
+        }
+
+
         console.log(status);
 
         if(document.getElementById('status')){
@@ -113,9 +125,20 @@ function blackoutScreen() {
     //Modify the database if the classroom was not already blacked
     var classroomData = Classrooms.findOne({id: 1});
     var classId = classroomData._id;
-    if(!classroomData.blackout){
-        Classrooms.update({_id: classId},{$set: {blackout: true}, $push: {presentTags: tagBlackout}});
+    if(!classroomData.global.paused){
+        Classrooms.update({_id: classId},{$set: {global: {paused: true}}});
+
+        //For now, we assume we are in device 1 always
+        var deviceData = Devices.findOne({id: 1});
+        var devId = deviceData._id;
+        if(deviceData.current.presentTags){
+            console.log("updating device info for device "+deviceData.id);
+            Devices.update({_id: devId},{$push: {"current.presentTags": tagBlackout}});
+        }
+
     }
+
+
 
 }
 
@@ -125,30 +148,38 @@ function normalScreen(){
     //Modify the database if the classroom was not already unblacked
     var classroomData = Classrooms.findOne({id: 1});
     var classId = classroomData._id;
-    if(classroomData.blackout){
-        Classrooms.update({_id: classId},{$set: {blackout: false}, $pull: {presentTags: tagBlackout}});
+    if(classroomData.global.paused){
+        Classrooms.update({_id: classId},{$set: {global: {paused: false}}});
+
+        //For now, we assume we are in device 1 always
+        var deviceData = Devices.findOne({id: 1});
+        var devId = deviceData._id;
+        if(deviceData.current.presentTags){
+            Devices.update({_id: devId},{$pull: {"current.presentTags": tagBlackout}});
+        }
     }
+
 
 }
 
 function addAnotherTag() {
 
-    //Modify the database if the tag was not already present
-    var classroomData = Classrooms.findOne({id: 1});
-    var classId = classroomData._id;
-    if(classroomData.presentTags.indexOf(tagAnother)===-1){
-        Classrooms.update({_id: classId},{$push: {presentTags: tagAnother}});
-    }
+          //For now, we assume we are in device 1 always
+        var deviceData = Devices.findOne({id: 1});
+        var devId = deviceData._id;
+        if(deviceData.current.presentTags){
+            Devices.update({_id: devId},{$push: {"current.presentTags": tagAnother}});
+        }
 
 }
 
 function removeAnotherTag(){
 
-    //Modify the database if the tag was present
-    var classroomData = Classrooms.findOne({id: 1});
-    var classId = classroomData._id;
-    if(classroomData.presentTags.indexOf(tagAnother)!=-1){
-        Classrooms.update({_id: classId},{$pull: {presentTags: tagAnother}});
-    }
+         //For now, we assume we are in device 1 always
+        var deviceData = Devices.findOne({id: 1});
+        var devId = deviceData._id;
+        if(deviceData.current.presentTags){
+            Devices.update({_id: devId},{$pull: {"current.presentTags": tagAnother}});
+        }
 
 }
