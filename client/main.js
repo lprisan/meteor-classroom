@@ -3,7 +3,7 @@
 //Reactive code to react to changes in the classroom data
 Deps.autorun(function() {
     console.log("entering autorun");
-  var classroomData = Classrooms.findOne({id: 1});
+  var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
 
   if(classroomData){
         var status;
@@ -21,7 +21,7 @@ Deps.autorun(function() {
         if(classroomData.devices.length>0){
             for(i=0;i<classroomData.devices.length;i++){
 
-                var device = Devices.findOne({id: classroomData.devices[i]});
+                var device = Devices.findOne({_id: classroomData.devices[i]});
 
                 if(device){
                     if(device.current.presentTags){
@@ -123,13 +123,13 @@ function blackoutScreen() {
     document.body.style.background = 'black';
 
     //Modify the database if the classroom was not already blacked
-    var classroomData = Classrooms.findOne({id: 1});
+    var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
     var classId = classroomData._id;
     if(!classroomData.global.paused){
         Classrooms.update({_id: classId},{$set: {global: {paused: true}}});
 
         //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({id: 1});
+        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
             console.log("updating device info for device "+deviceData.id);
@@ -146,13 +146,13 @@ function normalScreen(){
     document.body.style.background = 'white';    
 
     //Modify the database if the classroom was not already unblacked
-    var classroomData = Classrooms.findOne({id: 1});
+    var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
     var classId = classroomData._id;
     if(classroomData.global.paused){
         Classrooms.update({_id: classId},{$set: {global: {paused: false}}});
 
         //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({id: 1});
+        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
             Devices.update({_id: devId},{$pull: {"current.presentTags": tagBlackout}});
@@ -165,7 +165,7 @@ function normalScreen(){
 function addAnotherTag() {
 
           //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({id: 1});
+        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
             Devices.update({_id: devId},{$push: {"current.presentTags": tagAnother}});
@@ -176,7 +176,7 @@ function addAnotherTag() {
 function removeAnotherTag(){
 
          //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({id: 1});
+        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
             Devices.update({_id: devId},{$pull: {"current.presentTags": tagAnother}});

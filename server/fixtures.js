@@ -1,18 +1,19 @@
 
 if (Classrooms.find().count() === 0) {
 	Classrooms.insert({
-		id: 1,
+		_id: "9AWkshbxHiE45Aci7",
 		name: 'A first test classroom',
 		global: {
-			paused: false
+			paused: false,
+			pauserDevice: ''
 		},
-		devices: [1, 2]
+		devices: ["LziCQ4oJQ7bpQv7sA", "mmLHNnR5iWk87Xx2i"]
 	});
 }
 
 if (Devices.find().count() === 0) {
 	Devices.insert({
-		id: 1,
+		_id: "LziCQ4oJQ7bpQv7sA",
 		name: 'Red Lamp',
 		current:{
 			activity: {
@@ -30,7 +31,7 @@ if (Devices.find().count() === 0) {
 
 	});
 	Devices.insert({
-		id: 2,
+		_id: "mmLHNnR5iWk87Xx2i",
 		name: 'Blue Lamp',
 		current:{
 			activity: {
