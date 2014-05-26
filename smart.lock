@@ -3,7 +3,8 @@
   "dependencies": {
     "basePackages": {
       "iron-router": {},
-      "http-publish": {}
+      "http-publish": {},
+      "collection-api": {}
     },
     "packages": {
       "iron-router": {
@@ -15,6 +16,11 @@
         "git": "https://github.com/CollectionFS/Meteor-http-publish.git",
         "tag": "v0.0.10",
         "commit": "f308999d074a3c4c056a88c431be04cead93228b"
+      },
+      "collection-api": {
+        "git": "https://github.com/crazytoad/meteor-collectionapi.git",
+        "tag": "v0.1.15",
+        "commit": "b62c51f387287726cf3b64077f7bc69604ec2f5e"
       },
       "blaze-layout": {
         "git": "https://github.com/EventedMind/blaze-layout.git",
