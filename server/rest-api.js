@@ -38,7 +38,7 @@ if (Meteor.isServer) {
       before: {  // This methods, if defined, will be called before the POST/GET/PUT/DELETE actions are performed on the collection. If the function returns false the action will be canceled, if you return true the action will take place.
         POST: undefined,  // function(obj) {return true/false;},
         GET: undefined,  // function(collectionID, objs) {return true/false;},
-        PUT: insertClassroomHistory,  //function(collectionID, obj, newValues) {return true/false;},
+        PUT: undefined,  //function(collectionID, obj, newValues) {return true/false;},
         DELETE: undefined,  //function(collectionID, obj) {return true/false;}
       }
     });
@@ -52,52 +52,79 @@ if (Meteor.isServer) {
       before: {  // This methods, if defined, will be called before the POST/GET/PUT/DELETE actions are performed on the collection. If the function returns false the action will be canceled, if you return true the action will take place.
         POST: undefined,  // function(obj) {return true/false;},
         GET: undefined,  // function(collectionID, objs) {return true/false;},
-        PUT: insertDeviceHistory,  //function(collectionID, obj, newValues) {return true/false;},
+        PUT: undefined,  //function(collectionID, obj, newValues) {return true/false;},
         DELETE: undefined,  //function(collectionID, obj) {return true/false;}
       }
     });
+
+    // Add the collection Classrooms to the API "/classrooms" path
+    collectionApi.addCollection(ClassroomHistory, 'classroom-history', {
+      // All values listed below are default
+      authToken: undefined,                   // Require this string to be passed in on each request
+      methods: ['POST','GET'],  // Allow creating, reading, updating, and deleting
+      before: {  // This methods, if defined, will be called before the POST/GET/PUT/DELETE actions are performed on the collection. If the function returns false the action will be canceled, if you return true the action will take place.
+        POST: preprocessClassroomStateHistory,  // function(obj) {return true/false;},
+        GET: undefined,  // function(collectionID, objs) {return true/false;},
+        PUT: undefined,  //function(collectionID, obj, newValues) {return true/false;},
+        DELETE: undefined,  //function(collectionID, obj) {return true/false;}
+      }
+    });
+
+
+    // Add the collection Devices to the API "/devices" path
+    collectionApi.addCollection(DeviceHistory, 'device-history', {
+      // All values listed below are default
+      authToken: undefined,                   // Require this string to be passed in on each request
+      methods: ['POST','GET'],  // Allow creating, reading, updating, and deleting
+      before: {  // This methods, if defined, will be called before the POST/GET/PUT/DELETE actions are performed on the collection. If the function returns false the action will be canceled, if you return true the action will take place.
+        POST: preprocessDeviceStateHistory,  // function(obj) {return true/false;},
+        GET: undefined,  // function(collectionID, objs) {return true/false;},
+        PUT: undefined,  //function(collectionID, obj, newValues) {return true/false;},
+        DELETE: undefined,  //function(collectionID, obj) {return true/false;}
+      }
+    });
+
+
 
     // Starts the API server
     collectionApi.start();
   });
 }
 
+preprocessClassroomStateHistory = function(obj) {
 
-insertClassroomHistory = function(collectionID, obj, newValues) {
+  obj.timestamp = new Date().getTime(); //We introduce a timestamp for the new register
+  return true;
 
-	newValues.timestamp = new Date().getTime();
-
-	//if the old and new values are different, we insert the newValues into the classroom history
-	// if((obj.global.paused != newValues.global.paused) ||
-	// 	(obj.global.pauserDevice != newValues.global.pauserDevice)) {
-	// 	var record = JSON.parse(JSON.stringify(newValues));//We create a copy of the new classroom state object
-	// 	record.classroomid = record._id;//Each history entry should have a different _id, so we pass the classroom id to another field
-	// 	record._id = undefined;
-	// 	console.log('Detected classroom state change - instering into history...'+record);
-	// 	var newId = ClassroomHistory.insert(record,displayResult);
-	// 	console.log('inserting into classroom history: '+newId);
-	// }
-
-	return true;
 }
 
-insertDeviceHistory = function(collectionID, obj, newValues) {
+preprocessDeviceStateHistory = function(obj) {
 
-	newValues.timestamp = new Date().getTime();
+  obj.timestamp = new Date().getTime(); //We introduce a timestamp for the new register
+  return true;
 
-	//if the old and new values are different, we insert the newValues into the device history
-	// if(true) { //TODO: COMPLETE!!!!
-	// 	var record = JSON.parse(JSON.stringify(newValues));//We create a copy of the new device state object
-	// 	record.deviceid = record._id;//Each history entry should have a different _id, so we pass the device id to another field
-	// 	record._id = undefined;
-	// 	console.log('Detected device state change - instering into history...'+record);
-	// 	var newId = DeviceHistory.insert(record,displayResult);
-	// 	console.log('inserting into device history: '+newId);
-	// }
-
-	return true;
 }
 
+
+
+
+// These two functions try to implement the case where the server copies each new state request into the history log
+// WARNING! they do not work for now (see https://github.com/crazytoad/meteor-collectionapi/issues/35)
+// insertClassroomHistory = function(collectionID, obj, newValues) {
+// 	newValues.timestamp = new Date().getTime();
+// 	//if the old and new values are different, we insert the newValues into the classroom history
+// 	if((obj.global.paused != newValues.global.paused) ||
+// 		(obj.global.pauserDevice != newValues.global.pauserDevice)) {
+// 		var record = JSON.parse(JSON.stringify(newValues));//We create a copy of the new classroom state object
+// 		record.classroomid = record._id;//Each history entry should have a different _id, so we pass the classroom id to another field
+// 		record._id = undefined;
+// 		console.log('Detected classroom state change - instering into history...'+record);
+// 		var newId = ClassroomHistory.insert(record,displayResult);
+// 		console.log('inserting into classroom history: '+newId);
+// 	}
+
+// 	return true;
+// }
 
 // displayResult = function(error, result){
 // 	if(typeof error != 'undefined') console.log('There was an error '+error);
