@@ -1,18 +1,21 @@
 //Note: The classroom data should be available under the Classrooms variable! (in classrooms.js)
 
 var classroomData = undefined;
-var devicesHistoryCount = new Array();
+//var devicesHistoryCount = new Array();
 var STEPS_PER_MAP = 12;
 var game = undefined;
 var pausedSprite = undefined;
 var bugInitialState = {
-    completedMap: 0,
+    completedMaps: 0,
     stepsDone: 0,
-    stepsToGo: STEPS_PER_MAP,
+    stepsToGo: 0,
+    hintPresent: '',
+    wrongMoves: 0
 };
+var devicesData = new Array();
 var bugStates = new Array();//this will store each bug/device state
 var bugGroups = new Array();//this will store the sprites for each bug/device line of the game
-
+var bugTexts = new Array();//this will store each bug/device text
 
 
 //Reactive code to react to changes in the classroom data
@@ -53,10 +56,12 @@ Deps.autorun(function() {
                     if(device.current.presentTags){
                         status += "Tags present in device "+classroomData.devices[i]+": "+device.current.presentTags.toString()+"\n";
                     }
+                    devicesData[i] = JSON.parse(JSON.stringify(device));//We set the devices data variable, from which the state will be calculated
                 }
 
-                //TODO: for now, we just count the number of entries in each device's history
-                devicesHistoryCount[i] = DeviceHistory.find({deviceid: classroomData.devices[i]}).count();
+
+                //Initial implementation: for now, we just count the number of entries in each device's history
+                //devicesHistoryCount[i] = DeviceHistory.find({deviceid: classroomData.devices[i]}).count();
 
             }
 
@@ -159,11 +164,12 @@ function preload () {
 
 //Some constants for the graphical representation, in pixels
 var INITIAL_X = 50;
-var INITIAL_Y = 50;
-var Y_STEP = 150;
+var INITIAL_Y = 100;
+var Y_STEP = 110;
 var MAP_STEP = 75;
 var BALL_STEP = 32;
 var BUG_STEP = 64;
+var Y_OFFSET = Math.floor(BUG_STEP/2)+10;//For the display of the text on top of the bug and the balls
 
 function create () {
 
@@ -182,18 +188,19 @@ function create () {
             bugStates[i].deviceid = classroomData.devices[i];//we add the device id, just in case we want to check the order is being maintained
             var yval = INITIAL_Y + (i * Y_STEP);
             //console.log('calling drawing for '+bugGroups[i]+' and '+bugStates[i]);
-            drawRowState(bugGroups[i], bugStates[i], yval);            
+            drawRowState(bugGroups[i], bugStates[i], yval, i);            
         }
     }//TODO: what if we have not received the classroom data yet??
 
 }
 
 
-function drawRowState(group, state, yval){
+function drawRowState(group, state, yval, index){
 
+    if(bugTexts[index]) bugTexts[index].destroy();
     group.removeAll(true); //We cleanup all sprites in this group
     var currentx = INITIAL_X; //to keep track of the drawing of everything in a row
-    for(var i=0;i<state.completedMap;i++){
+    for(var i=0;i<state.completedMaps;i++){
         var newSprite = group.create(currentx,yval,'map');
         newSprite.anchor.setTo(0.5, 0.5);
         currentx = currentx + MAP_STEP;
@@ -203,16 +210,25 @@ function drawRowState(group, state, yval){
         var newSprite = group.create(currentx,yval,'step');
         newSprite.anchor.setTo(0.5, 0.5);
         currentx = currentx + BALL_STEP;
+        //TODO: at the middle of the balls, draw the fraction of the path done
     }
 
     var bugSprite = group.create(currentx,yval,'bug');
     bugSprite.anchor.setTo(0.5, 0.5);
+    //We draw the text on top of the bug, depending on the hints and wrong moves
+    var bugText = '';
+    if(state.hintPresent.length>0) bugText += '?';
+    for(var i=0;i<state.wrongMoves;i++) bugText += '!';
+    var style = { font: "30px Times New Roman", fill: "#000000", align: "center" };
+    bugTexts[index] = game.add.text(currentx, yval-Y_OFFSET, bugText, style);
+    bugTexts[index].anchor.setTo(0.5, 0.5);
     currentx = currentx + BUG_STEP;
 
     for(var i=0;i<state.stepsToGo;i++){
         var newSprite = group.create(currentx,yval,'togo');
         newSprite.anchor.setTo(0.5, 0.5);
         currentx = currentx + BALL_STEP;
+        //TODO: at the middle of the balls, draw the fraction of the path to go
     }    
 
 }
@@ -231,14 +247,20 @@ function update(){
 
 function calculateCurrentState(device){
 
-    var count = devicesHistoryCount[device];
-    var completedMaps = Math.floor(count/STEPS_PER_MAP);
-    var steps = count - (STEPS_PER_MAP * completedMaps);
-    var togo = STEPS_PER_MAP-steps;
+    //Right now, the bug state is directly derived from the device state, this could get more complex if we have different activities, etc
+    var completed = devicesData[device].current.activity.state.completedMaps;
+    var done = devicesData[device].current.activity.state.stepsDone;
+    var togo = devicesData[device].current.activity.state.stepsToGo;
+    var hint = devicesData[device].current.activity.state.hintPresent;
+    var wrong = devicesData[device].current.activity.state.wrongMoves;
+
+
     var currentstate = {
-        completedMap: completedMaps,
-        stepsDone: steps,
+        completedMaps: completed,
+        stepsDone: done,
         stepsToGo: togo,
+        hintPresent: hint,
+        wrongMoves: wrong
     };
     //console.log('current state: '+completedMaps+' completed, '+steps+' steps, '+togo+' to go.')
     return currentstate;

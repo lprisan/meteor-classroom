@@ -5,7 +5,8 @@ if (Classrooms.find().count() === 0) {
 		name: 'A first test classroom',
 		global: {
 			paused: false,
-			pauserDevice: ''
+			pauserDevice: '',
+			masterHint: ''
 		},
 		devices: ["LziCQ4oJQ7bpQv7sA", "mmLHNnR5iWk87Xx2i"]
 	});
@@ -18,12 +19,13 @@ if (Devices.find().count() === 0) {
 		current:{
 			activity: {
 				id: 1,
-				name: 'Construct fraction',
+				name: 'Kill the bug',
 				state: {
-					numerator: 0,
-					denominator: 1,
-					value: 0,
-					representation: "circular"
+					completedMaps: 0,
+					stepsDone: 0,
+					stepsToGo: 0,
+					hintPresent: '',
+					wrongMoves: 0
 				}
 			},
 			presentTags: []
@@ -36,12 +38,13 @@ if (Devices.find().count() === 0) {
 		current:{
 			activity: {
 				id: 1,
-				name: 'Construct fraction',
+				name: 'Kill the bug',
 				state: {
-					numerator: 0,
-					denominator: 1,
-					value: 0,
-					representation: "circular"
+					completedMaps: 0,
+					stepsDone: 0,
+					stepsToGo: 0,
+					hintPresent: '',
+					wrongMoves: 0
 				}
 			},
 			presentTags: []
