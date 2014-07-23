@@ -105,8 +105,11 @@ function unpauseGame(){
 
 // chilitags variables
 var fpsText, start;
-var tagBlackout = "tag_1";
-var tagAnother = "tag_2";
+
+//old way of defining tags in paprika
+//var tagBlackout = "tag_1";
+//var tagAnother = "tag_2";
+
 var rendered = false;
 
 // If it is the camera version, we initialize the whole camera and chilitags setup
@@ -198,7 +201,10 @@ function create () {
 function drawRowState(group, state, yval, index){
 
     if(bugTexts[index]) bugTexts[index].destroy();
-    group.removeAll(true); //We cleanup all sprites in this group
+    try{
+        group.removeAll(true); //We cleanup all sprites in this group
+    }catch(err){}//If there was an error, we do not care and continue
+
     var currentx = INITIAL_X; //to keep track of the drawing of everything in a row
     for(var i=0;i<state.completedMaps;i++){
         var newSprite = group.create(currentx,yval,'map');
@@ -276,6 +282,7 @@ function initSimpleClassroom() {
 }
 
 function initPaprikaEvents() {
+
     Paprika.start(document.getElementById('videoFrame'));
     
     // chilitags info
@@ -284,27 +291,51 @@ function initPaprikaEvents() {
 
     start = new Date();
 
-    Paprika.onTagUpdate(function(objects) {
+    Paprika.onUpdate(function(objects) {
         var end = new Date();
-
-        var str = 'Objects: ';
-        for(var obj in objects){
-            str += obj + "(" +objects[obj][3]+ ")" + " ";
-        }
-        fpsText.nodeValue = "Chilitags processing = " + (end.getTime() - start.getTime()) + "ms." + str;
+        var str = "Objects: ";
+        
+        for(var obj in objects) { str += obj + ", "; }
+        
+        fpsText.nodeValue = "Chilitags processing = " + 
+                            (end.getTime() - start.getTime()) + 
+                            "ms.\n" + str;
         start = end;
     });
 
+    //New way of defining cards in paprika
+    var card = {};
+    card[3] = {size: 20, dx: 0, dy: 0};
+    card[4] = {size: 20, dx: 0, dy: 0, back:true};
+    Paprika.defineCards({card:card});
+
+
     //blackout tag
-    Paprika.onAppear(blackoutScreen, tagBlackout);
-    Paprika.onDisappear(normalScreen, tagBlackout);
+    //Paprika.onAppear(blackoutScreen, tagBlackout);
+    //Paprika.onDisappear(normalScreen, tagBlackout);
     //other tag - only updates status
-    Paprika.onAppear(addAnotherTag, tagAnother);
-    Paprika.onDisappear(removeAnotherTag, tagAnother);
+    //Paprika.onAppear(addAnotherTag, tagAnother);
+    //Paprika.onDisappear(removeAnotherTag, tagAnother);
+    //We make the pause toggle with the flip of the pause card
+    Paprika.onFlip(togglePause, "card")
+}
+
+function togglePause(data) {
+
+    console.log("objectName: " + data.objectName +
+                        ", facing: " + data.facing + 
+                        ", tilt: " + data.tilt + 
+                        ", orientation: " + data.orientation);
+
+    var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
+    var classId = classroomData._id;
+    if(!classroomData.global.paused) blackoutScreen();
+    else normalScreen();
+
 }
 
 function blackoutScreen() {
-    //document.body.style.background = 'black';
+    document.body.style.background = 'black';
 
     //Modify the database if the classroom was not already blacked
     var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
@@ -317,7 +348,7 @@ function blackoutScreen() {
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
             //console.log("updating device info for device "+deviceData.id);
-            Devices.update({_id: devId},{$push: {"current.presentTags": tagBlackout}});
+            Devices.update({_id: devId},{$push: {"current.presentTags": "PauseTags"}});
         }
 
     }
@@ -327,7 +358,7 @@ function blackoutScreen() {
 }
 
 function normalScreen(){
-    //document.body.style.background = 'white';    
+    document.body.style.background = 'white';    
 
     //Modify the database if the classroom was not already unblacked
     var classroomData = Classrooms.findOne({_id: "9AWkshbxHiE45Aci7"});
@@ -339,31 +370,27 @@ function normalScreen(){
         var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
         var devId = deviceData._id;
         if(deviceData.current.presentTags){
-            Devices.update({_id: devId},{$pull: {"current.presentTags": tagBlackout}});
+            Devices.update({_id: devId},{$pull: {"current.presentTags": "PauseTags"}});
         }
     }
 
 
 }
 
-function addAnotherTag() {
-
-          //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
-        var devId = deviceData._id;
-        if(deviceData.current.presentTags){
-            Devices.update({_id: devId},{$push: {"current.presentTags": tagAnother}});
-        }
-
-}
-
-function removeAnotherTag(){
-
-         //For now, we assume we are in device 1 always
-        var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
-        var devId = deviceData._id;
-        if(deviceData.current.presentTags){
-            Devices.update({_id: devId},{$pull: {"current.presentTags": tagAnother}});
-        }
-
-}
+// not used anymore
+// function addAnotherTag() {
+//           //For now, we assume we are in device 1 always
+//         var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
+//         var devId = deviceData._id;
+//         if(deviceData.current.presentTags){
+//             Devices.update({_id: devId},{$push: {"current.presentTags": tagAnother}});
+//         }
+// }
+// function removeAnotherTag(){
+//          //For now, we assume we are in device 1 always
+//         var deviceData = Devices.findOne({_id: "LziCQ4oJQ7bpQv7sA"});
+//         var devId = deviceData._id;
+//         if(deviceData.current.presentTags){
+//             Devices.update({_id: devId},{$pull: {"current.presentTags": tagAnother}});
+//         }
+// }
