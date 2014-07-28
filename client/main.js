@@ -254,12 +254,19 @@ function update(){
 function calculateCurrentState(device){
 
     //Right now, the bug state is directly derived from the device state, this could get more complex if we have different activities, etc
-    var completed = devicesData[device].current.activity.state.completedMaps;
-    var done = devicesData[device].current.activity.state.stepsDone;
-    var togo = devicesData[device].current.activity.state.stepsToGo;
-    var hint = devicesData[device].current.activity.state.hintPresent;
-    var wrong = devicesData[device].current.activity.state.wrongMoves;
+    var completed = 0;
+    var done = 0;
+    var togo = 0;
+    var hint = '';
+    var wrong = 0;
 
+    if(devicesData[device]){
+        completed = devicesData[device].current.activity.state.completedMaps;
+        done = devicesData[device].current.activity.state.stepsDone;
+        togo = devicesData[device].current.activity.state.stepsToGo;
+        hint = devicesData[device].current.activity.state.hintPresent;
+        wrong = devicesData[device].current.activity.state.wrongMoves;
+    }
 
     var currentstate = {
         completedMaps: completed,
