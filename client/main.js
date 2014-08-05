@@ -201,41 +201,47 @@ function create () {
 function drawRowState(group, state, yval, index){
 
     if(bugTexts[index]) bugTexts[index].destroy();
-    try{
-        group.removeAll(true); //We cleanup all sprites in this group
-    }catch(err){}//If there was an error, we do not care and continue
 
-    var currentx = INITIAL_X; //to keep track of the drawing of everything in a row
-    for(var i=0;i<state.completedMaps;i++){
-        var newSprite = group.create(currentx,yval,'map');
-        newSprite.anchor.setTo(0.5, 0.5);
-        currentx = currentx + MAP_STEP;
+    if(group){
+
+        try{
+            group.removeAll(true); //We cleanup all sprites in this group
+        }catch(err){}//If there was an error, we do not care and continue
+
+        var currentx = INITIAL_X; //to keep track of the drawing of everything in a row
+        for(var i=0;i<state.completedMaps;i++){
+            var newSprite = group.create(currentx,yval,'map');
+            newSprite.anchor.setTo(0.5, 0.5);
+            currentx = currentx + MAP_STEP;
+        }
+
+        for(var i=0;i<state.stepsDone;i++){
+            var newSprite = group.create(currentx,yval,'step');
+            newSprite.anchor.setTo(0.5, 0.5);
+            currentx = currentx + BALL_STEP;
+            //TODO: at the middle of the balls, draw the fraction of the path done
+        }
+
+        var bugSprite = group.create(currentx,yval,'bug');
+        bugSprite.anchor.setTo(0.5, 0.5);
+        //We draw the text on top of the bug, depending on the hints and wrong moves
+        var bugText = '';
+        if(state.hintPresent.length>0) bugText += '?';
+        for(var i=0;i<state.wrongMoves;i++) bugText += '!';
+        var style = { font: "30px Times New Roman", fill: "#000000", align: "center" };
+        bugTexts[index] = game.add.text(currentx, yval-Y_OFFSET, bugText, style);
+        bugTexts[index].anchor.setTo(0.5, 0.5);
+        currentx = currentx + BUG_STEP;
+
+        for(var i=0;i<state.stepsToGo;i++){
+            var newSprite = group.create(currentx,yval,'togo');
+            newSprite.anchor.setTo(0.5, 0.5);
+            currentx = currentx + BALL_STEP;
+            //TODO: at the middle of the balls, draw the fraction of the path to go
+        }    
+        
     }
 
-    for(var i=0;i<state.stepsDone;i++){
-        var newSprite = group.create(currentx,yval,'step');
-        newSprite.anchor.setTo(0.5, 0.5);
-        currentx = currentx + BALL_STEP;
-        //TODO: at the middle of the balls, draw the fraction of the path done
-    }
-
-    var bugSprite = group.create(currentx,yval,'bug');
-    bugSprite.anchor.setTo(0.5, 0.5);
-    //We draw the text on top of the bug, depending on the hints and wrong moves
-    var bugText = '';
-    if(state.hintPresent.length>0) bugText += '?';
-    for(var i=0;i<state.wrongMoves;i++) bugText += '!';
-    var style = { font: "30px Times New Roman", fill: "#000000", align: "center" };
-    bugTexts[index] = game.add.text(currentx, yval-Y_OFFSET, bugText, style);
-    bugTexts[index].anchor.setTo(0.5, 0.5);
-    currentx = currentx + BUG_STEP;
-
-    for(var i=0;i<state.stepsToGo;i++){
-        var newSprite = group.create(currentx,yval,'togo');
-        newSprite.anchor.setTo(0.5, 0.5);
-        currentx = currentx + BALL_STEP;
-        //TODO: at the middle of the balls, draw the fraction of the path to go
-    }    
 
 }
 
