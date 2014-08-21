@@ -3,7 +3,7 @@ A first attempt at doing a "orchestrable classroom" online application using the
 # Features
 Current prototype concentrates on having a **reactive visualization** of the classroom/device state:
 
-http://localhost:3000/
+http://localhost:3000/visualization
 
 ...and exposing a **REST API** for such a state, in the form:
 
@@ -22,7 +22,6 @@ sudo -H npm install -g meteorite
 mrt add iron-router http-publish collection-api
 ```
 
-3. 
 
 # Usage
 From the command line within the project root folder, run:
